@@ -50,7 +50,8 @@ const getTasks = async () => {
       await axios.post(`http://localhost:5000/api/tasks`,
       formData)
       toast.success("Task added successfully")
-      setFormData({...formData, name:""})
+      setFormData({...formData, name: ""});
+      getTasks();
     } catch (error) {
       toast.error(error.message);
       console.log(error);
@@ -71,6 +72,13 @@ const deleteTask = async(id) => {
     toast.error(error.message)
   }
 }
+
+useEffect (() => {
+  const cTask = tasks.filter((task) => {
+    return task.completed === true
+  })
+  setCompletedTasks(cTask)
+}, [tasks])
 
 //update
 const getSingleTask = async(task) => {
@@ -93,8 +101,22 @@ const updateTask = async(e) => {
       toast.error(error.message)
    }
 };
- 
 
+
+// Complete
+
+const setToComplete = async (task) => {
+  const newFormData = {
+      name: task.name,
+      completed: true,
+  }
+  try {
+    await axios.put(`http://localhost:5000/api/tasks/${task._id}`, newFormData)
+    getTasks()
+  } catch (error) {
+    toast.error(error.message)
+  }
+}
 
 
   return (
@@ -107,14 +129,16 @@ const updateTask = async(e) => {
       isEditing={isEditing}
       updateTask={updateTask}
       />
-      <div className="--flex-between --pb">
-        <p>
-          <b>Total Tasks:</b> 0
-        </p>
-        <p>
-          <b>Completed Tasks:</b> 0
-        </p>
-      </div>
+      {tasks.length > 0 && (
+              <div className="--flex-between --pb">
+              <p>
+                <b>Total Tasks:</b> {tasks.length}
+              </p>
+              <p>
+                <b>Completed Tasks:</b> {completedTasks.length}
+              </p>
+            </div>
+      )}
       <hr/>
       {
         isLoading && (
@@ -136,6 +160,7 @@ const updateTask = async(e) => {
               index={index}
               deleteTask={deleteTask}
               getSingleTask={getSingleTask}
+              setToComplete={setToComplete}
               />
             )
           })}
